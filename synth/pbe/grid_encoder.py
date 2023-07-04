@@ -7,12 +7,13 @@ from synth.nn.spec_encoder import SpecificationEncoder
 from synth.specification import PBE
 from synth.task import Task
 
+from examples.pbe.karel.karel import KarelWorld
 
-class IOEncoder(SpecificationEncoder[PBE, Tensor]):
+
+class GridEncoder(SpecificationEncoder[PBE, Tensor]):
     def __init__(
         self, output_dimension: int, lexicon: List[Any], undefined: bool = True
     ) -> None:
-        print("IOIOIOIOIOIOIOIOIOOOOOOOIOIOIOIOI\n")
         self.output_dimension = output_dimension
 
         self.special_symbols = [
@@ -37,26 +38,35 @@ class IOEncoder(SpecificationEncoder[PBE, Tensor]):
         self.start_list_index = self.symbol2index["STARTOFLIST"]
         self.end_list_index = self.symbol2index["ENDOFLIST"]
         self.pad_symbol = self.symbol2index["PADDING"]
+        print("GRID "*4,'\n')
+        print('*'*10,self.output_dimension,"\n", flush=True)
+        print('*'*10,self.lexicon,"\n", flush=True)
+        print('*'*10,self.non_special_lexicon_size,"\n", flush=True)
+        print('*'*10,self.symbol2index,"\n", flush=True)
 
     def __encode_element__(self, x: Any, encoding: List[int]) -> None:
-        if isinstance(x, List):
-            encoding.append(self.start_list_index)
-            for el in x:
-                self.__encode_element__(el, encoding)
-            encoding.append(self.end_list_index)
-        else:
+        # if isinstance(x, List):
+        #     encoding.append(self.start_list_index)
+        #     for el in x:
+        #         self.__encode_element__(el, encoding)
+        #     encoding.append(self.end_list_index)
+        # else:
             encoding.append(self.symbol2index.get(x, self._default))  # type: ignore
 
-    def encode_IO(self, IO: Tuple[List, Any], device: Optional[str] = None) -> Tensor:
+    def encode_grid(self, IO: Tuple[List, Any], device: Optional[str] = None) -> Tensor:
+        # world: KarelWorld, grid : Tuple[Tuple[float]]
         """
         embed a list of inputs and its associated output
-        IO is of the form [[I1, I2, ..., Ik], O]
+        IO is of the form [[I1, I2, ..., Ik], O]world: KarelWorld, grid : Tuple[Tuple[float]]
         where I1, I2, ..., Ik are inputs and O is an output
 
         outputs a tensor of dimension self.output_dimension
         """
         e = [self.starting_index]
+        print("e = ",e,"\n")
         inputs, output = IO
+        print("****** input = ",inputs,'\n',flush=True)
+        print("****** output : ", output,'\n', flush=True)
         for x in inputs:
             self.__encode_element__(x, e)
             e.append(self.end_of_input_index)
@@ -75,9 +85,10 @@ class IOEncoder(SpecificationEncoder[PBE, Tensor]):
         return res
 
     def encode(self, task: Task[PBE], device: Optional[str] = None) -> Tensor:
+        print("tutututututututu\n", flush=True)
         return torch.stack(
             [
-                self.encode_IO((ex.inputs, ex.output), device)
+                self.encode_grid((ex.inputs, ex.output), device)
                 for ex in task.specification.examples
             ]
         )

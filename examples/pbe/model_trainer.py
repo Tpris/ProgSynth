@@ -30,6 +30,7 @@ DEEPCODER = "deepcoder"
 REGEXP = "regexp"
 CALCULATOR = "calculator"
 TRANSDUCTION = "transduction"
+KAREL = "karel"
 
 
 import argparse
@@ -188,10 +189,10 @@ type2cfg = {
 }
 cfgs = list(type2cfg.values())
 print(f"{len(all_type_requests)} type requests supported.")
-print(f"Lexicon: [{min(lexicon)};{max(lexicon)}]")
+# print(f"Lexicon: [{min(lexicon)};{max(lexicon)}]")
 
 
-predictor = instantiate_predictor(parameters, cfgs, lexicon)
+predictor = instantiate_predictor(parameters, cfgs, lexicon, dsl_name != KAREL)
 print_model_summary(predictor)
 optim = torch.optim.AdamW(predictor.parameters(), lr, weight_decay=weight_decay)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, "min")
