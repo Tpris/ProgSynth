@@ -74,7 +74,7 @@ def instantiate_predictor(
     cpu_only: bool = parameters.cpu
     constrained: bool = parameters.constrained
     device = "cuda" if not cpu_only and torch.cuda.is_available() else "cpu"
-    print("\n*********\n")
+    print("\n**********\n")
 
     return MyPredictor(
         hidden_size,
