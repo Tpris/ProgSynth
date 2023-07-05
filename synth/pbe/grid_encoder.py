@@ -25,7 +25,7 @@ class GridEncoder(SpecificationEncoder[PBE, Tensor]):
         input, output = world
 
         # Get numpy grids
-        input_grid = input.grid
+        input_grid = input[0].grid
         output_grid = np.asarray(output)
 
         # Data shape
@@ -36,11 +36,10 @@ class GridEncoder(SpecificationEncoder[PBE, Tensor]):
         e = np.append(input_grid,output_grid)
         e.shape = shape
 
-        res = torch.FloatTensor(e).to(device)
+        res = torch.LongTensor(e).to(device)
         return res
 
     def encode(self, task: Task[PBE], device: Optional[str] = None) -> Tensor:
-        print("\n\nencooooooooooooode\n\n", flush=True)
         return torch.stack(
             [
                 self.encode_grid((ex.inputs, ex.output), device)

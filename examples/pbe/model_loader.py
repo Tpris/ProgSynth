@@ -43,13 +43,13 @@ class MyPredictor(nn.Module):
             abstraction,
             variable_probability,
         )
-        print("111111111111\n")
         encoder = IOEncoder(encoding_dimension, lexicon) if IO else GridEncoder(encoding_dimension, lexicon)
-        print("2222222222222222222\n")
         self.packer = Task2Tensor(
-            encoder, nn.Embedding(len(encoder.lexicon), size), size, device=device
+            encoder, 
+            nn.Embedding(len(encoder.lexicon) if IO else 15, size), 
+            size, 
+            device=device
         )
-        print("333333333333333333333\n",flush=True)
         self.rnn = nn.LSTM(size, size, 1)
         self.end = nn.Sequential(
             nn.Linear(size, size),
@@ -74,7 +74,6 @@ def instantiate_predictor(
     cpu_only: bool = parameters.cpu
     constrained: bool = parameters.constrained
     device = "cuda" if not cpu_only and torch.cuda.is_available() else "cpu"
-    print("\n**********\n")
 
     return MyPredictor(
         hidden_size,

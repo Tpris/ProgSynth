@@ -189,7 +189,8 @@ type2cfg = {
 }
 cfgs = list(type2cfg.values())
 print(f"{len(all_type_requests)} type requests supported.")
-# print(f"Lexicon: [{min(lexicon)};{max(lexicon)}]")
+if dsl_name != KAREL :
+    print(f"Lexicon: [{min(lexicon)};{max(lexicon)}]")
 
 
 predictor = instantiate_predictor(parameters, cfgs, lexicon, dsl_name != KAREL)
@@ -206,7 +207,7 @@ def get_batch_of_tasks() -> List[Task[PBE]]:
     dataset_index += batch_size
     copy = []
     for task in batch:
-        if task.solution is not None:
+        if task.solution is not None :
             copy.append(task)
     return copy
 
