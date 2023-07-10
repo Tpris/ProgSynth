@@ -11,6 +11,8 @@ from synth.specification import TaskSpecification
 from synth.syntax.program import Primitive, Program
 from synth.task import Task
 
+from synth.pbe import IOEncoder
+import numpy as np
 
 class AutoPack(nn.Module):
     """
@@ -87,7 +89,7 @@ class Task2Tensor(nn.Module, Generic[T]):
         self.embed_size = embed_size
 
     def forward(self, tasks: List[Task[T]]) -> PackedSequence:
-        packed: PackedSequence = self.packer(self.embed(self.encode(tasks)))
+        packed: PackedSequence = self.packer(self.embed(self.encode(tasks))) if(isinstance(self.encoder,IOEncoder)) else self.packer(self.encode(tasks))
         return packed
 
     def encode(self, tasks: List[Task[T]]) -> List[Tensor]:
@@ -95,6 +97,11 @@ class Task2Tensor(nn.Module, Generic[T]):
 
     def embed(self, batch_inputs: List[Tensor]) -> List[Tensor]:
         return [self.embedder(x).reshape((-1, self.embed_size)) for x in batch_inputs]
+    
+    def flatten(self,packed : PackedSequence) -> PackedSequence :
+        nnfl = nn.Flatten()
+        packed.data = torch.reshape(packed.data, (-1,)) 
+        return packed
 
 
 def one_hot_encode_primitives(

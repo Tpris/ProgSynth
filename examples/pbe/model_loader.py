@@ -5,6 +5,7 @@ import torch
 from torch import Tensor
 import torch.nn as nn
 from torch.nn.utils.rnn import PackedSequence
+import torch.nn.functional as F
 
 from synth import PBE, Task
 from synth.nn import (
@@ -43,13 +44,17 @@ class MyPredictor(nn.Module):
             abstraction,
             variable_probability,
         )
-        encoder = IOEncoder(encoding_dimension, lexicon) if IO else GridEncoder(encoding_dimension, lexicon)
+
+        self.cnn = CNN()
+
+        encoder = IOEncoder(encoding_dimension, lexicon) if IO else GridEncoder(encoding_dimension, self.cnn)
         self.packer = Task2Tensor(
             encoder, 
-            nn.Embedding(len(encoder.lexicon) if IO else 15, size), 
+            nn.Embedding(len(encoder.lexicon), size) if IO else None,
             size, 
             device=device
         )
+        
         self.rnn = nn.LSTM(size, size, 1)
         self.end = nn.Sequential(
             nn.Linear(size, size),
@@ -63,6 +68,19 @@ class MyPredictor(nn.Module):
         _, (y, _) = self.rnn(seq)
         y: Tensor = y.squeeze(0)
         return self.bigram_layer(self.end(y))
+    
+class CNN(nn.Module):
+    def __init__(self):
+        super(CNN, self).__init__()
+        self.conv1 = nn.Conv2d(2, 4, 5)
+        self.conv2 = nn.Conv2d(4, 8, 3)
+
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        return x
+
 
 
 def instantiate_predictor(

@@ -14,10 +14,11 @@ import numpy as np
 
 class GridEncoder(SpecificationEncoder[PBE, Tensor]):
     def __init__(
-        self, output_dimension: int, lexicon: List[Any], undefined: bool = True
+        self, output_dimension: int, reseau: torch.nn.Module
     ) -> None:
         self.output_dimension = output_dimension
-        self.lexicon = lexicon
+        self.reseau = reseau
+
 
     def encode_grid(self, world: Tuple[KarelWorld, Tuple[Tuple[float]]], device: Optional[str] = None) -> Tensor:
         # world : Tuple(KarelWorld, KW.state)
@@ -36,13 +37,14 @@ class GridEncoder(SpecificationEncoder[PBE, Tensor]):
         e = np.append(input_grid,output_grid)
         e.shape = shape
 
-        res = torch.LongTensor(e).to(device)
+        res = torch.FloatTensor(e).to(device)
+        # print(res)
         return res
 
     def encode(self, task: Task[PBE], device: Optional[str] = None) -> Tensor:
         return torch.stack(
             [
-                self.encode_grid((ex.inputs, ex.output), device)
+                self.reseau(self.encode_grid((ex.inputs, ex.output), device)).flatten()
                 for ex in task.specification.examples
             ]
         )
