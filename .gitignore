@@ -30,3 +30,9 @@ docs/build
 
 # VS Code Counter
 .VSCodeCounter
+
+# JSON files
+*.json
+
+*.txt
+*.tar.gz
