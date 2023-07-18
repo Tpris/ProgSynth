@@ -97,11 +97,6 @@ class Task2Tensor(nn.Module, Generic[T]):
 
     def embed(self, batch_inputs: List[Tensor]) -> List[Tensor]:
         return [self.embedder(x).reshape((-1, self.embed_size)) for x in batch_inputs]
-    
-    def flatten(self,packed : PackedSequence) -> PackedSequence :
-        nnfl = nn.Flatten()
-        packed.data = torch.reshape(packed.data, (-1,)) 
-        return packed
 
 
 def one_hot_encode_primitives(
