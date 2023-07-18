@@ -45,7 +45,7 @@ class MyPredictor(nn.Module):
             variable_probability,
         )
 
-        self.cnn = CNN()
+        self.cnn = CNN().to(device)
 
         encoder = IOEncoder(encoding_dimension, lexicon) if IO else GridEncoder(encoding_dimension, self.cnn)
         self.packer = Task2Tensor(

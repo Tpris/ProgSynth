@@ -93,7 +93,7 @@ class Task2Tensor(nn.Module, Generic[T]):
         return packed
 
     def encode(self, tasks: List[Task[T]]) -> List[Tensor]:
-        return [self.encoder.encode(task).to(self.device) for task in tasks]
+        return [self.encoder.encode(task,self.device) for task in tasks]
 
     def embed(self, batch_inputs: List[Tensor]) -> List[Tensor]:
         return [self.embedder(x).reshape((-1, self.embed_size)) for x in batch_inputs]
