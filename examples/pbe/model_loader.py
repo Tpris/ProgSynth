@@ -55,7 +55,7 @@ class MyPredictor(nn.Module):
             device=device
         )
         
-        self.rnn = nn.LSTM(size, size, 1)
+        self.rnn = nn.GRU(size, size, 1)
         self.end = nn.Sequential(
             nn.Linear(size, size),
             nn.ReLU(),
@@ -65,7 +65,7 @@ class MyPredictor(nn.Module):
 
     def forward(self, x: List[Task[PBE]]) -> Tensor:
         seq: PackedSequence = self.packer(x)
-        _, (y, _) = self.rnn(seq)
+        _, y = self.rnn(seq)
         y: Tensor = y.squeeze(0)
         return self.bigram_layer(self.end(y))
     
