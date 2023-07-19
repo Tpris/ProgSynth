@@ -231,7 +231,7 @@ def produce_pcfgs(
         for cfg in cfgs
     ]
 
-    predictor = instantiate_predictor(parameters, cfgs, lexicon)
+    predictor = instantiate_predictor(parameters, cfgs, lexicon, dsl_name != "karel")
     predictor.load_state_dict(torch.load(model_file, map_location=device))
     predictor = predictor.to(device)
     predictor.eval()
