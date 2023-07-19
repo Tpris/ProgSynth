@@ -55,7 +55,7 @@ class MyPredictor(nn.Module):
             device=device
         )
         
-        self.rnn = nn.GRU(size, size, 1)
+        self.rnn = nn.RNN(size, size, 1)
         self.end = nn.Sequential(
             nn.Linear(size, size),
             nn.ReLU(),
