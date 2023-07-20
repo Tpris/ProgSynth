@@ -231,25 +231,25 @@ def generate_samples_for(
     equiv_classes = {None: programs}
     nb_examples = 0
     nb_tested = 0
-    pbar = tqdm.tqdm(total=examples * threshold, desc="2: sem. unicity")
+    pbar = tqdm.tqdm(total=examples * abs(threshold), desc="2: sem. unicity")
     best = None
     best_score = 0
     while nb_examples < examples:
         next_equiv_classes = defaultdict(list)
         clear_cache()
         thres_reached = nb_tested * nb_tested > threshold * threshold
-        ui = best if thres_reached else input_sampler()
-        none_ratio = 0
+        ui = best if thres_reached and best is not None else input_sampler()
+        failed_ratio = 0
         for cl, prog in equiv_classes.items():
             for p in prog:
                 o = eval_prog(p, ui)
-                if o is None:
-                    none_ratio += 1
+                if not task_generator.output_validator(o):
+                    failed_ratio += 1
                 if isinstance(o, List):
                     o = tuple(o)
                 next_equiv_classes[(o, cl)].append(p)
         ratio = len(programs) / len(equiv_classes)
-        if len(next_equiv_classes) > best_score and none_ratio / len(programs) < 0.2:
+        if len(next_equiv_classes) > best_score and failed_ratio / len(programs) < 0.2:
             best = ui
             best_score = len(next_equiv_classes)
         # Early stopping if no new examples is interesting
@@ -267,7 +267,8 @@ def generate_samples_for(
             equiv_classes = next_equiv_classes
             samples.append(ui)
             best_score = len(next_equiv_classes)
-            pbar.n = nb_examples * threshold
+            pbar.n = nb_examples * abs(threshold)
+            pbar.refresh()
         pbar.set_postfix_str(
             f"{len(equiv_classes)}->{best_score} | {best_score/len(programs):.0%}"
         )
