@@ -36,3 +36,4 @@ docs/build
 
 *.txt
 *.tar.gz
+script.sh
