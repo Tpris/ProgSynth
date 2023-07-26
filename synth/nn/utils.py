@@ -11,7 +11,7 @@ from synth.specification import TaskSpecification
 from synth.syntax.program import Primitive, Program
 from synth.task import Task
 
-from synth.pbe import IOEncoder
+from synth.pbe.io_encoder import IOEncoder
 import numpy as np
 
 class AutoPack(nn.Module):

@@ -14,7 +14,8 @@ from synth.nn import (
     abstractions,
     Task2Tensor,
 )
-from synth.pbe import IOEncoder, GridEncoder
+from synth.pbe.grid_encoder import GridEncoder
+from synth.pbe.io_encoder import IOEncoder
 from synth.syntax import UCFG, TTCFG
 from synth.syntax.grammars.cfg import CFG
 
@@ -44,8 +45,8 @@ class MyPredictor(nn.Module):
             abstraction,
             variable_probability,
         )
-
-        self.cnn = CNN().to(device)
+        if not IO:
+            self.cnn = CNN().to(device)
 
         encoder = IOEncoder(encoding_dimension, lexicon) if IO else GridEncoder(encoding_dimension, self.cnn)
         self.packer = Task2Tensor(
@@ -137,6 +138,6 @@ def add_model_choice_arg(parser: ArgumentParser) -> None:
     gg.add_argument(
         "--cpu",
         action="store_true",
-        default=False,
+        default=True,
         help="do not try to run things on cuda",
     )
