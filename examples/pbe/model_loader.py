@@ -54,13 +54,20 @@ class MyPredictor(nn.Module):
             size, 
             device=device
         )
+
+        def init_weights(m):
+            if type(m) == nn.Linear:
+                torch.nn.init.xavier_normal(m.weight)
         
-        self.rnn = nn.RNN(size, size, 1)
+        self.rnn = nn.RNN(size, size, 1, dropout=0.8)
+        
+        # Applying it to our net
+        self.rnn.apply(init_weights)
+
         self.end = nn.Sequential(
+            # nn.Dropout(p=0.3),
             nn.Linear(size, size),
-            nn.ReLU(),
-            nn.Linear(size, size),
-            nn.ReLU(),
+            nn.SELU(),
         )
 
     def forward(self, x: List[Task[PBE]]) -> Tensor:

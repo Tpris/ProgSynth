@@ -265,13 +265,19 @@ class UGrammarPredictorLayer(nn.Module, Generic[A, U, V, W]):
         # Normalize
         if len(dst.shape) == 1:
             for _, (start, length, _) in self.abs2index.items():
-                dst[start : start + length] = F.log_softmax(
+                # dst[start : start + length] = F.log_softmax(
+                #     src[start : start + length], dim=-1
+                # )
+                dst[start : start + length] = torch.sigmoid(
                     src[start : start + length], dim=-1
                 )
 
         else:
             for _, (start, length, _) in self.abs2index.items():
-                dst[:, start : start + length] = F.log_softmax(
+                # dst[:, start : start + length] = F.log_softmax(
+                #     src[:, start : start + length], dim=-1
+                # )
+                dst[:, start : start + length] = torch.sigmoid(
                     src[:, start : start + length], dim=-1
                 )
 
@@ -289,7 +295,16 @@ class UGrammarPredictorLayer(nn.Module, Generic[A, U, V, W]):
             ]
         ).to(device=batch_outputs.device)
         # Since we already do LogSoftmax we only have to do NNL to get cross entropy
-        out = F.cross_entropy(batch_outputs, target)
+        # out = F.cross_entropy(batch_outputs, target)
+
+        # out = F.binary_cross_entropy_with_logits(batch_outputs, target)
+
+        # loss = nn.PoissonNLLLoss()
+        loss = nn.MSELoss()
+        # loss = nn.L1Loss()
+
+        out = loss(batch_outputs, target)
+
         if reduce:
             out = reduce(out)
         return out
