@@ -59,7 +59,7 @@ class MyPredictor(nn.Module):
             if type(m) == nn.Linear:
                 torch.nn.init.xavier_normal(m.weight)
         
-        self.rnn = nn.RNN(size, size, 1, dropout=0.8)
+        self.rnn = nn.RNN(size, size, 1)
         
         # Applying it to our net
         self.rnn.apply(init_weights)
