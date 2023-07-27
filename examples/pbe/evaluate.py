@@ -4,7 +4,6 @@ import os
 import sys
 from typing import Callable, Iterable, List, Optional, Tuple, Union
 import csv
-import pickle
 
 import tqdm
 
@@ -60,6 +59,11 @@ parser.add_argument(
     default="base",
     help="used method (default: base)",
 )
+parser.add_argument(
+    "--predict",
+    action="store_true",
+    help="only do the PCFG prediction part",
+)
 add_dsl_choice_arg(parser)
 add_model_choice_arg(parser)
 parser.add_argument(
@@ -94,6 +98,7 @@ model_file: str = parameters.model
 task_timeout: float = parameters.timeout
 batch_size: int = parameters.batch_size
 constrained: bool = parameters.constrained
+predict_only: bool = parameters.predict
 support: Optional[str] = (
     None if not parameters.support else parameters.support.format(dsl_name=dsl_name)
 )
@@ -263,6 +268,8 @@ def produce_pcfgs(
     pbar.close()
     save_pcfgs()
     atexit.unregister(save_pcfgs)
+    if predict_only:
+        return pcfgs
     del predictor
     free_pytorch_memory()
     return pcfgs
@@ -399,36 +406,37 @@ def semantic_equivalence(
     with chrono.clock("search.semantic_equivalence") as c:
         results = {}
         enumerator = custom_enumerate(pcfg)
+        merged = 0
         for program in enumerator:
             time = c.elapsed_time()
             if time >= task_timeout:
                 return (False, time, programs, None, None)
             programs += 1
             failed = False
-            outputs = []
+            outputs = None
             for ex in task.specification.examples:
                 out = evaluator.eval(program, ex.inputs)
-                if out != ex.output:
-                    failed = True
-                    if isinstance(out, list):
-                        outputs.append(tuple(out))
-                    else:
-                        outputs.append(out)
+                failed |= out != ex.output
+                if isinstance(out, list):
+                    outputs = (outputs, tuple(out))
+                else:
+                    outputs = (outputs, out)
             if not failed:
                 return (
                     True,
                     c.elapsed_time(),
                     programs,
                     program,
-                    pcfg.probability(program),
+                    merged,
                 )
-            elif len(outputs) > 0:
-                original = results.get(tuple(outputs))
+            else:
+                original = results.get(outputs)
                 if original is not None:
                     enumerator.merge_program(original, program)
+                    merged += 1
                 else:
-                    results[tuple(outputs)] = program
-    return (False, time, programs, None, None)
+                    results[outputs] = program
+    return (False, time, programs, None, merged)
 
 
 def constants_injector(
@@ -694,26 +702,27 @@ if __name__ == "__main__":
     method_fn = METHODS[method]
 
     pcfgs = produce_pcfgs(full_dataset, dsl, lexicon, constraints)
-    file = os.path.join(
-        output_folder, f"{dataset_name}_{model_name}_{search_algo}_{method}.csv"
-    )
-    trace = []
-    if os.path.exists(file):
-        with open(file, "r") as fd:
-            reader = csv.reader(fd)
-            trace = [tuple(row) for row in reader]
-            trace.pop(0)
-            print(
-                "\tLoaded",
-                len(trace),
-                "/",
-                len(full_dataset),
-                "(",
-                int(len(trace) * 100 / len(full_dataset)),
-                "%)",
-            )
-    enumerative_search(
-        full_dataset, evaluator, pcfgs, trace, method_fn, custom_enumerate
-    )
-    save(trace)
-    print("csv file was saved as:", file)
+    if not predict_only:
+        file = os.path.join(
+            output_folder, f"{dataset_name}_{model_name}_{search_algo}_{method}.csv"
+        )
+        trace = []
+        if os.path.exists(file):
+            with open(file, "r") as fd:
+                reader = csv.reader(fd)
+                trace = [tuple(row) for row in reader]
+                trace.pop(0)
+                print(
+                    "\tLoaded",
+                    len(trace),
+                    "/",
+                    len(full_dataset),
+                    "(",
+                    int(len(trace) * 100 / len(full_dataset)),
+                    "%)",
+                )
+        enumerative_search(
+            full_dataset, evaluator, pcfgs, trace, method_fn, custom_enumerate
+        )
+        save(trace)
+        print("csv file was saved as:", file)
