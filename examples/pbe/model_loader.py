@@ -144,6 +144,6 @@ def add_model_choice_arg(parser: ArgumentParser) -> None:
     gg.add_argument(
         "--cpu",
         action="store_true",
-        default=True,
+        default=False,
         help="do not try to run things on cuda",
     )
