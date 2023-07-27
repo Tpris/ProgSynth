@@ -65,7 +65,6 @@ class MyPredictor(nn.Module):
         self.rnn.apply(init_weights)
 
         self.end = nn.Sequential(
-            # nn.Dropout(p=0.3),
             nn.Linear(size, size),
             nn.SELU(),
         )
