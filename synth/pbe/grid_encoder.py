@@ -19,12 +19,12 @@ class GridEncoder(SpecificationEncoder[PBE, Tensor]):
         self.output_dimension = output_dimension
         self.reseau = reseau
 
+    # Convert an integer to a binary array
     def get_binary_array(self, num: int):
         bin_str = np.binary_repr(num, width=4)
         return np.fromstring('-'.join(bin_str[i:i+1] for i in range(len(bin_str))), dtype=int, sep='-') 
 
     def encode_grid(self, world: Tuple[KarelWorld, Tuple[Tuple[float]]], device: Optional[str] = None) -> Tensor:
-        # world : Tuple(KarelWorld, KW.state)
 
         input, output = world
 
@@ -37,12 +37,12 @@ class GridEncoder(SpecificationEncoder[PBE, Tensor]):
         shape = (2,) + shape + (4,)
 
         # Get encoding data
+        # Integers grid are converted to grid of binary arrays
         e = np.append(input_grid,output_grid).astype(int)
         e = np.array([self.get_binary_array(elem) for elem in e])
         e.shape = shape
 
         res = torch.FloatTensor(e).to(device)
-        # print(res)
         return res
 
     def encode(self, task: Task[PBE], device: Optional[str] = None) -> Tensor:

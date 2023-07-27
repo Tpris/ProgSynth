@@ -12,7 +12,6 @@ from synth.syntax.program import Primitive, Program
 from synth.task import Task
 
 from synth.pbe.io_encoder import IOEncoder
-import numpy as np
 
 class AutoPack(nn.Module):
     """
@@ -92,6 +91,9 @@ class Task2Tensor(nn.Module, Generic[T]):
         packed: PackedSequence = self.packer(self.embed(self.encode(tasks))) if(isinstance(self.encoder,IOEncoder)) else self.packer(self.encode(tasks))
         return packed
 
+    '''
+    `self.device` was placed in parameter of the function. `encode(task).to(self.device)` didn't apply the device
+    '''
     def encode(self, tasks: List[Task[T]]) -> List[Tensor]:
         return [self.encoder.encode(task,self.device) for task in tasks]
 

@@ -206,7 +206,7 @@ def get_batch_of_tasks() -> List[Task[PBE]]:
     dataset_index += batch_size
     copy = []
     for task in batch:
-        if task.solution is not None :
+        if task.solution is not None:
             copy.append(task)
     return copy
 
@@ -234,8 +234,6 @@ def do_batch(iter_number: int) -> None:
             )
         with chrono.clock("train.do_batch.loss.backprop"):
             loss.backward()
-            # torch.nn.utils.clip_grad_value_(predictor.parameters(), clip_value=5.0) #clip
-            # torch.nn.utils.clip_grad_norm_(predictor.parameters(), max_norm=1.0) #scale
             optim.step()
             # Should be called on val_loss but we don't have one here
             scheduler.step(loss.item())

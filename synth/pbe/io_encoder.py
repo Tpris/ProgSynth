@@ -12,7 +12,6 @@ class IOEncoder(SpecificationEncoder[PBE, Tensor]):
     def __init__(
         self, output_dimension: int, lexicon: List[Any], undefined: bool = True
     ) -> None:
-        print("IOIOIOIOIOIOIOIOIOOOOOOOIOIOIOIOI\n")
         self.output_dimension = output_dimension
 
         self.special_symbols = [

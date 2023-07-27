@@ -289,6 +289,9 @@ class UGrammarPredictorLayer(nn.Module, Generic[A, U, V, W]):
             ]
         ).to(device=batch_outputs.device)
         # Since we already do LogSoftmax we only have to do NNL to get cross entropy
+        '''
+        Now there is a sigmoid normalization then the use of MSELoss
+        '''
         loss = nn.MSELoss()
         out = loss(batch_outputs, target)
 

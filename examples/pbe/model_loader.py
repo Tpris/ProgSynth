@@ -14,6 +14,9 @@ from synth.nn import (
     abstractions,
     Task2Tensor,
 )
+'''
+IOEncoder changed because of circular dependency
+'''
 from synth.pbe.grid_encoder import GridEncoder
 from synth.pbe.io_encoder import IOEncoder
 from synth.syntax import UCFG, TTCFG
@@ -45,6 +48,10 @@ class MyPredictor(nn.Module):
             abstraction,
             variable_probability,
         )
+
+        '''
+        if is used to not see the CNN in the summaries with IOEncoder
+        '''
         if not IO:
             self.cnn = CNN().to(device)
 
@@ -61,8 +68,7 @@ class MyPredictor(nn.Module):
                 torch.nn.init.xavier_normal(m.weight)
         
         self.rnn = nn.RNN(size, size, 1)
-        
-        # Applying it to our net
+        # Applying weight initialization to the RNN
         self.rnn.apply(init_weights)
 
         self.end = nn.Sequential(
