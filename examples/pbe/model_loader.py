@@ -80,12 +80,9 @@ class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
         self.conv1 = nn.Conv2d(10, 10, 3, padding='valid')
-        # self.conv2 = nn.Conv2d(10, 8, 3, padding='valid')
-
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
-        # x = F.relu(self.conv2(x))
         return x
 
 
